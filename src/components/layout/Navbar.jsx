@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, ShoppingBag, Bike } from "lucide-react";
+import { Menu, X, ShoppingBag, Bike, Flame } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InstagramIcon } from "@hugeicons/core-free-icons";
 import GradientText from "@/components/ui/GradientText";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { formatCoins } from "@/lib/fireCoins";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "#inicio" },
@@ -19,6 +22,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalCount, openCart } = useCart();
+  const { isAuthenticated, fireCoins } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -61,6 +65,28 @@ export default function Navbar() {
           >
             <HugeiconsIcon icon={InstagramIcon} size={20} strokeWidth={1.8} />
           </a>
+
+          <Link
+            href="/account"
+            aria-label={isAuthenticated ? "Tus Fire Coins" : "Iniciar sesión"}
+            className="flex items-center gap-1.5 rounded-full border border-white/15 py-1.5 pl-1.5 pr-3 text-sm font-semibold text-foreground/80 transition-colors hover:border-fire-500 hover:text-fire-500"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-fire-500/15 text-fire-500">
+              <Flame size={14} />
+            </span>
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={isAuthenticated ? fireCoins : "login"}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isAuthenticated ? formatCoins(fireCoins) : "Iniciar sesión"}
+              </motion.span>
+            </AnimatePresence>
+          </Link>
+
           <a
             href="https://glovoapp.com"
             target="_blank"
@@ -86,6 +112,14 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
+          <Link
+            href="/account"
+            aria-label={isAuthenticated ? "Tus Fire Coins" : "Iniciar sesión"}
+            className="flex items-center gap-1 text-sm font-semibold text-foreground/80"
+          >
+            <Flame size={18} className="text-fire-500" />
+            {isAuthenticated ? formatCoins(fireCoins) : null}
+          </Link>
           <button
             type="button"
             onClick={openCart}
@@ -130,6 +164,13 @@ export default function Navbar() {
                   {link.label}
                 </a>
               ))}
+              <Link
+                href="/account"
+                onClick={() => setMobileOpen(false)}
+                className="text-lg"
+              >
+                {isAuthenticated ? "Mi cuenta y Fire Coins" : "Iniciar sesión"}
+              </Link>
               <a
                 href="https://glovoapp.com"
                 target="_blank"

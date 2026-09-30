@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, Flame } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { eurosToCoinsEarned, formatCoins } from "@/lib/fireCoins";
+import AuthPanel from "@/components/auth/AuthPanel";
 import CheckoutStepper from "./CheckoutStepper";
 
 export default function CartDrawer() {
@@ -18,6 +21,7 @@ export default function CartDrawer() {
     decrementItem,
     removeItem,
   } = useCart();
+  const { isAuthenticated } = useAuth();
   const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
@@ -26,6 +30,9 @@ export default function CartDrawer() {
       return () => clearTimeout(timeout);
     }
   }, [isCartOpen]);
+
+  const showAuthGate = checkingOut && !isAuthenticated;
+  const showStepper = checkingOut && isAuthenticated;
 
   return (
     <AnimatePresence>
@@ -63,7 +70,24 @@ export default function CartDrawer() {
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <AnimatePresence mode="wait">
-                {checkingOut ? (
+                {showAuthGate ? (
+                  <motion.div
+                    key="auth-gate"
+                    initial={{ opacity: 0, x: 12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setCheckingOut(false)}
+                      className="mb-4 text-sm text-foreground/60 transition-colors hover:text-fire-500"
+                    >
+                      ← Volver al carrito
+                    </button>
+                    <AuthPanel onAuthenticated={() => {}} />
+                  </motion.div>
+                ) : showStepper ? (
                   <motion.div
                     key="checkout"
                     initial={{ opacity: 0, x: 12 }}
@@ -161,12 +185,16 @@ export default function CartDrawer() {
 
             {!checkingOut && items.length > 0 && (
               <div className="border-t border-white/10 px-6 py-5">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="font-body text-foreground/70">Total</span>
                   <span className="font-display text-2xl text-fire-500">
                     {totalPrice.toFixed(2)} €
                   </span>
                 </div>
+                <p className="mb-4 flex items-center gap-1.5 text-xs text-foreground/50">
+                  <Flame size={13} className="text-fire-500" />
+                  Ganarás {formatCoins(eurosToCoinsEarned(totalPrice))} Fire Coins con este pedido
+                </p>
                 <button
                   type="button"
                   onClick={() => setCheckingOut(true)}

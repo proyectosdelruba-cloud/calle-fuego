@@ -1,9 +1,10 @@
 "use client";
- 
+
 import Image from "next/image";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
- 
+
 const ALLERGEN_LABELS = {
   gluten: "Gluten",
   lacteos: "Lácteos",
@@ -13,10 +14,10 @@ const ALLERGEN_LABELS = {
   soja: "Soja",
   frutos_cascara: "Frutos de cáscara",
 };
- 
+
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
- 
+
   return (
     <motion.article
       layout
@@ -35,7 +36,7 @@ export default function ProductCard({ product }) {
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
- 
+
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-display text-xl tracking-wide text-foreground">{product.name}</h3>
@@ -43,11 +44,11 @@ export default function ProductCard({ product }) {
             {product.price.toFixed(2)} €
           </span>
         </div>
- 
+
         {product.description ? (
           <p className="mt-2 text-sm text-foreground/70">{product.description}</p>
         ) : null}
- 
+
         {product.allergens.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {product.allergens.map((allergen) => (
@@ -60,10 +61,15 @@ export default function ProductCard({ product }) {
             ))}
           </div>
         ) : null}
- 
+
         <button
           type="button"
-          onClick={() => addItem(product, false)}
+          onClick={() => {
+            addItem(product, false);
+            toast.success(`${product.name} añadido`, {
+              description: "Ya está en tu carrito.",
+            });
+          }}
           className="mt-4 rounded-full bg-fire-500 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.02] active:scale-95"
         >
           Añadir al carrito
@@ -72,4 +78,3 @@ export default function ProductCard({ product }) {
     </motion.article>
   );
 }
- 
